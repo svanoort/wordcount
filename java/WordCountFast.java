@@ -1,8 +1,9 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.lang.Comparable;
-import java.util.Comparator;
 import java.lang.Integer;
 import java.lang.String;
 import java.lang.StringBuilder;
@@ -10,11 +11,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.NavigableMap;
+import java.util.LinkedHashMap;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 import java.util.Collections;
-import java.util.regex.Pattern;
 
 /** Word count for Java. 
     Slow because of boxing/unboxing.
@@ -22,14 +21,24 @@ import java.util.regex.Pattern;
 class WordCountFast {
     static final String SEPARATORS = "\t \n";
 
-    public static int compareEntries(Map.Entry<String,Integer> entry1, Map.Entry<String,Integer> entry2) {
-        int comparison = Integer.compare(entry2.getValue(), entry1.getValue()); //Reversed because descending order
+    // Allows for more efficient sorting, since we're comparing integers mostly
+    static class SimpleEntry implements Comparable<SimpleEntry> {
+        int count = 0;
+        String word = null;
 
-        // First sort by count, then alphabetically
-        if (comparison == 0) {
-            comparison = entry1.getKey().compareTo(entry2.getKey());
+        SimpleEntry(String word, int count) {
+            this.word = word;
+            this.count = count;
         }
-        return comparison;
+
+        @Override
+        public int compareTo(SimpleEntry other) {
+            int returnVal =  other.count - this.count;  // Reversed sort order
+            if (returnVal == 0) {
+                returnVal = this.word.compareTo(other.word);
+            }
+            return returnVal;
+        }
     }
 
     // Pulled out so this can be optimized by JIT compiler
@@ -44,24 +53,28 @@ class WordCountFast {
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        Map<String, Integer> m = new HashMap<String, Integer>();
+        Map<String, Integer> m = new LinkedHashMap<String, Integer>();
         String line;
         while ((line = br.readLine()) != null) {
             handleLine(m, line.trim());
         }
         // Now we dump all the counts in a list and sort them
-        ArrayList<Map.Entry<String,Integer>> entries = new ArrayList<Map.Entry<String, Integer>>(m.entrySet());
-        Comparator<Map.Entry<String,Integer>> entryComparator = new Comparator<Map.Entry<String,Integer>>() {
-            @Override
-            public int compare(Map.Entry<String,Integer> entry1, Map.Entry<String,Integer> entry2) {
-                return compareEntries(entry1, entry2);
-            }
-        };
-        Collections.sort(entries, entryComparator);
+        ArrayList<SimpleEntry> simpleEntries = new ArrayList<SimpleEntry>(m.size());
+        for (Map.Entry<String,Integer> entry : m.entrySet()) {
+            simpleEntries.add(new SimpleEntry(entry.getKey(), entry.getValue()));
+        }
+        Collections.sort(simpleEntries);
 
         // Now we print out the sorted words
-        for (Map.Entry<String,Integer> entry : entries) {
-            System.out.println(entry.getKey() + "\t" + entry.getValue());
+        StringBuilder build = new StringBuilder(100);
+        BufferedWriter log = new BufferedWriter(new OutputStreamWriter(System.out));
+        
+        for (SimpleEntry entry : simpleEntries) {
+            String outputStr = entry.word + "\t" + entry.count;
+            log.write(outputStr, 0, outputStr.length());
+            log.newLine();
         }
+        log.flush();
+        log.close();
     }
 }
