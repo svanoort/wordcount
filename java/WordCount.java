@@ -40,43 +40,52 @@ class WordCount {
             m.put(word, new CountForWord(word));
         }
     }
+
+    /** Reads a chunk of characters, tokenizes it, and submits tokens
+    *  After execution, it shuffles residual characters to the start of the array
+    *  And returns the number of characters remaining to include in the next token
+    */
+    public static int tokenizeAndSubmitBlock(Map<String, CountForWord> counts, 
+        final char[] inputBuffer, int startIndex, int charsRead) {
+        
+        int index = 0; // Start of current token
+        int endIndex = startIndex + charsRead;
+        
+        // Go from start to end of current read
+        for (int i=startIndex; i<endIndex; i++) {
+            char c = inputBuffer[i];
+            
+            if (c == ' ' || c == '\n' || c == '\t' || c == '\r') { // New token
+                if (i != index) {
+                    String word = new String(inputBuffer, index, i-index);
+                    submitWord(counts, word);
+                    index = i;
+                }
+                index++;
+            }
+        }
+
+        // Copy residual token content to beginning of the array, start going again
+        int residualSize =  endIndex - index;
+        if (residualSize > 0) {
+            System.arraycopy(inputBuffer, index, inputBuffer, 0, residualSize);
+            return residualSize;
+        } 
+        return 0;
+    }
     
     public static void main(String[] args) throws IOException {
         Reader reader = new InputStreamReader(System.in);
         Map<String, CountForWord> m = new HashMap<String, CountForWord>(100000);
 
-        final int MAX_READ = 65536;  // Chunk size to read, also maximum token size
+        final int MAX_READ = 8192;  // Chunk size to read, also maximum token size
         char[] charBuffer = new char[MAX_READ];
         int startIndex = 0; // 1st element in array with new data
         int charsRead = 0;
         StringBuffer leftovers;
 
         while ((charsRead = reader.read(charBuffer, startIndex, MAX_READ-startIndex)) > 0) {
-            int index = 0; // Start of current token
-            int endIndex = startIndex + charsRead;
-            
-            // Go from start to end of current read
-            for (int i=startIndex; i<endIndex; i++) {
-                char c = charBuffer[i];
-                
-                if (c == ' ' || c == '\n' || c == '\t' || c == '\r') { // New token
-                    if (i != index) {
-                        String word = new String(charBuffer, index, i-index);
-                        submitWord(m, word);
-                        index = i;
-                    }
-                    index++;
-                }
-            }
-
-            // Copy residual token content to beginning of the array, start going again
-            int residualSize =  endIndex - index;
-            if (residualSize > 0) {
-                System.arraycopy(charBuffer, index, charBuffer, 0, residualSize);
-                startIndex = residualSize;
-            } else {
-                startIndex = 0;
-            }
+            startIndex = tokenizeAndSubmitBlock(m, charBuffer, startIndex, charsRead);
         }
 
         // Final residual token content
