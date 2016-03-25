@@ -84,27 +84,36 @@ class WordCount {
         int charsRead = 0;
         StringBuffer leftovers;
 
+        long startTime = System.currentTimeMillis();
         while ((charsRead = reader.read(charBuffer, startIndex, MAX_READ-startIndex)) > 0) {
             startIndex = tokenizeAndSubmitBlock(m, charBuffer, startIndex, charsRead);
         }
-
         // Final residual token content
         if (startIndex > 0) {
             String word = new String(charBuffer, 0, startIndex);
             submitWord(m, word);
         }
-
         reader.close();
+        long endTime = System.currentTimeMillis();
+        System.err.println("Parse and count time (ms): "+(endTime-startTime));
+
 
         System.err.println("sorting...");
+        startTime = System.currentTimeMillis();
         ArrayList<CountForWord> lst = new ArrayList<>(m.values());
         Collections.sort(lst);
+        endTime = System.currentTimeMillis();
+        System.err.println("Sorting time (ms): "+(endTime-startTime));
+
         System.err.println("output...");
+        startTime = System.currentTimeMillis();
         BufferedWriter outputWriter = new BufferedWriter(new OutputStreamWriter(System.out));
         for(CountForWord c : lst){
             outputWriter.write(c.word + "\t" + c.count);
             outputWriter.newLine();
         }
         outputWriter.close();
+        endTime = System.currentTimeMillis();
+        System.err.println("Output time (ms): "+(endTime-startTime));
     }
 }
