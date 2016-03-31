@@ -1,16 +1,18 @@
 bash/wordcount.sh
+c/wordcount
 cpp/wordcount
+cpp/wordcount_clang
 cpp/wordcount_baseline
 d/wordcount
-elixir elixir/wordcount.ex
+elixir/wordcount
 go/bin/wordcount
 haskell/WordCount
-java -classpath java WordCount
-java -cp clojure.jar clojure.main clojure/wordcount.clj
+java -Xmx6G -classpath java WordCountBaseline
+java -Xmx6G -classpath java:java/trove-3.0.3.jar WordCountOptimized
+java -Xmx6G -classpath /usr/lib/clojure.jar clojure.main clojure/wordcount.clj
 julia julia/wordcount.jl
 lua lua/wordcount.lua
-mono csharp/WordCountList.exe
-nodejs javascript/wordcount2.js
+mono csharp/WordCount.exe
 nodejs javascript/wordcount.js
 nodejs typescript/wordcount.js
 perl/wordcount.pl
@@ -19,5 +21,6 @@ php7.0 php/wordcount.php
 python/wordcount_py2_baseline.py
 python/wordcount_py2.py
 python/wordcount_py3.py
+ruby2.3 ruby/wordcount.rb
 rust/wordcount/wordcount
 scala -J-Xmx2g -classpath scala Wordcount
