@@ -13,8 +13,6 @@ java -Xmx6G -classpath /usr/lib/clojure.jar clojure.main clojure/wordcount.clj
 julia julia/wordcount.jl
 lua lua/wordcount.lua
 mono csharp/WordCount.exe
-nodejs javascript/wordcount.js
-nodejs typescript/wordcount.js
 perl/wordcount.pl
 php5.6 php/wordcount.php
 php7.0 php/wordcount.php
