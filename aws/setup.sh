@@ -32,9 +32,13 @@ sudo docker run -h DOCKER -it --rm -v $(pwd):/allthelanguages svanoort/allthelan
 sudo chown ec2-user:ec2-user results.txt
 cat results.txt | python scripts/evaluate_results.py > clean_results.txt
 
-# TODO hash/metadata on results, instance info, OS version, package versions
-
-# Upload results
+# Create completion marker file
+echo $(TZ=America/New_York date) > last_finished.html
 aws s3 cp ./results.txt s3://codeablereason-benchmark-results/
 aws s3 cp ./clean_results.txt s3://codeablereason-benchmark-results/
+aws s3 cp last_finished.html s3://codeablereason-benchmark-results/
+
+# TODO hash/metadata on results, instance info, OS version, package versions
+# Upload results
+
 
