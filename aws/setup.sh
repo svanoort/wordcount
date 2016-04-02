@@ -32,6 +32,18 @@ sudo docker run -h DOCKER -it --rm -v $(pwd):/allthelanguages svanoort/allthelan
 sudo chown ec2-user:ec2-user results.txt
 cat results.txt | python scripts/evaluate_results.py > clean_results.txt
 
+# System info and metadata
+echo "Start time:  $(TZ=America/New_York date)" >> run_metadata.txt
+echo "System basics: $(uname -a)" >> run_metadata.txt
+echo "Instance type: $(curl -m 1 http://169.254.169.254/latest/meta-data/instance-type 2>/dev/null)" >> run_metadata.txt
+echo "Git branch: $(git branch 2> /dev/null | grep -e '\* ' | sed 's/\*//g') :: Hash: $(git rev-parse HEAD)" >> run_metadata.txt
+echo "CPU thread count: $(nproc) :: CPU core count: $(cat /proc/cpuinfo | grep 'core id' | sort | uniq | wc -l)" >> run_metadata.txt
+echo "CPU type: $(cat /proc/cpuinfo | grep 'model name' | sed 's/model.*: //g')" >> run_metadata.txt
+cat /proc/meminfo | grep 'MemTotal' >> run_metadata.txt
+echo "VMSTAT (MiB):" >>  run_metadata.txt
+vmstat -S M >> run_metadata.txt
+# lscpu >> cpu_details.txt  # If we want fancy details on a yum-based system
+
 # Create completion marker file
 echo $(TZ=America/New_York date) > last_finished.html
 aws s3 cp ./results.txt s3://codeablereason-benchmark-results/
