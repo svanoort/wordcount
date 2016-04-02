@@ -15,7 +15,7 @@ fi
 
 comment=$3
 
-workdir=`mktemp -d`
+workdir=`mktemp -d ./XXXX`
 cat $data > $workdir/input
 wc -l $workdir/input
 
